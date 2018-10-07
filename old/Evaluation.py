@@ -1,6 +1,7 @@
-from MultiPursuit import *
-from DrawAveStepsGrapth import *
 import csv
+
+from DrawAveStepsGrapth import *
+from old.MultiPursuit import *
 
 if __name__ == '__main__':
     params = {'num_of_agents':3,

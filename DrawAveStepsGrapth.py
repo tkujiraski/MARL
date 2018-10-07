@@ -27,10 +27,12 @@ class DrawAveStepsGraph:
                         ave[trial,i] = s/avestep
                     trial += 1
             avetrial = ave.mean(axis=0)
+            stdtrial = ave.std(axis=0, ddof=1)
             last100ave = avetrial[-1]
-            last100std = last100.std(ddof=1)
+            last100std = stdtrial[-1]
+            last100std_each = last100.std(ddof=1)
             drawdata.append(avetrial)
-            print(filename+": ave={0}, std={1}".format(last100ave,last100std))
+            print(filename+": ave={0}, std={1}, std_each={2}".format(last100ave,last100std,last100std_each))
 
         fig = plt.figure()
         plt.xlabel('Episodes[x100]')
@@ -77,7 +79,8 @@ if __name__ == '__main__':
     #drg = DrawAveStepsGraph(['result/maze/CQISRe0.1.csv'],100,20000)
     #drg = DrawAveStepsGraph(['result/maze/AgentCITe0.1g1.0.csv'], 100, 20000)
     #drg = DrawAveStepsGraph(['result/maze/CQCITe0.1.csv'], 100, 20000)
-    drg = DrawAveStepsGraph(['result/maze/ep200000/AgentTunnel2Goale0.1g1.0wall-1step300000trial50.csv',
+
+    """drg = DrawAveStepsGraph(['result/maze/ep200000/AgentTunnel2Goale0.1g1.0wall-1step300000trial50.csv',
                              'result/maze/ep200000/JSQLearnerTunnel2Goale0.1g1.0wall-1step300000trial50.csv',
                              'result/maze/ep200000/JSAQLearnerTunnel2Goale0.1g1.0wall-1step300000trial50.csv']
                             ,['Indep.','JS','JSA'], 100, 20000)
@@ -104,4 +107,8 @@ if __name__ == '__main__':
                              'result/maze/ep200000/GCQLearnerCITe0.1g1.0wall-1step300000trial50.csv',
                              'result/maze/ep200000/PCQLearner2CITe0.1g1.0wall-1step300000trial50.csv',
                              'result/maze/ep200000/GPCQLearnerCITe0.1g1.0wall-1step300000trial50.csv'],['CQ','GCQ','PCQ','GPCQ'], 100,
-                            20000)
+                            20000)"""
+
+    drg = DrawAveStepsGraph(['log/GPCQLearnerTunnel2Goale0.1g1.0wall-1step300000trial1.csv']
+                            , ['GPCQ'], 100,
+                            200000)

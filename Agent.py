@@ -64,3 +64,6 @@ class Agent:
     def get_state(self):
         # 現在の状態を返す
         return self.state
+
+    def get_augmented_states(self):
+        return []

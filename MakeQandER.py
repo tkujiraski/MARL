@@ -1,7 +1,8 @@
-from MultiPursuit import *
+import csv
+
 from DrawAveStepsGrapth import *
 from ERLearner import *
-import csv
+from old.MultiPursuit import *
 
 # シングルで学習した場合のQ値と、各状態・行動に対する平均即時報酬のデータを作成する
 if __name__ == '__main__':

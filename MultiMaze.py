@@ -25,8 +25,8 @@ class MultiMaze():
         self.wall = params['wall']
         self.collision = params['collision']
         self.maze = maze
-        self.goal = maze.goal
-        self.start = maze.start
+        #self.goal = maze.goal
+        #self.start = maze.start
         self.yx2state = {} # 座標から状態番号への変換
         # 迷路のチェック
         self.mazestate = 0
@@ -57,7 +57,6 @@ class MultiMaze():
                 self.agents.append(learner(i, self.nstate, len(self.mv), params, self))
         self.multi_q = MultiAgentRL(self.agents, params, self.env_init, self.env_update, self.observe, self.check_goal)
         self.state = []
-        self.goal = False
 
         # 学習パラメータ
         self.eps = params['eps']
@@ -69,7 +68,7 @@ class MultiMaze():
     def env_init(self):
         # 環境の初期化。
         for i in range(self.num_of_agents):
-            self.agentPosition[i] = self.start[i]
+            self.agentPosition[i] = self.maze.start[i]
         # 初期状態を表現
         self.state = self._make_state_expression()
         self.isGoal = False
@@ -97,70 +96,104 @@ class MultiMaze():
                 self.agents[0].r = self.goal
             else:
                 self.agents[0].r = penalty
-        elif self.num_of_agents == 2:
-            # N=2の場合。
-            # 自分から突っ込んでいっても、壁にぶつかって結果としてぶつかってもペナルティは同じとする(collisionのペナルティのみ)
-            self.agentOldPosition[0] = self.agentPosition[0].copy()
-            self.agentOldPosition[1] = self.agentPosition[1].copy()
-            if self.learner.joint():
-                next_pos0, penalty0 = self._move(0,self.agentPosition[0],self.agents[0].action // len(self.mv))
-                next_pos1, penalty1 = self._move(1,self.agentPosition[1], self.agents[0].action % len(self.mv)) # 判断するのは１つだけ
-            else:
-                next_pos0, penalty0 = self._move(0,self.agentPosition[0],self.agents[0].action)
-                next_pos1, penalty1 = self._move(1,self.agentPosition[1], self.agents[1].action)
-
-            if next_pos0 == self.maze.goal[0] and next_pos1 == self.maze.goal[1]:
-                # 両者がゴールした場合
-                self.agentPosition[0] = next_pos0
-                self.agentPosition[1] = next_pos1
-                self.isGoal = True
-                if self.learner.joint():
-                    self.agents[0].r = self.goal
-                else:
-                    self.agents[0].r = self.goal
-                    self.agents[1].r = self.goal
-            else:
-                if next_pos0 == next_pos1: # 同じ場所に動こうとすると元の位置に戻る(動けない)
-                    penalty0 = self.collision
-                    penalty1 = self.collision
-                else:
-                    self.agentPosition[0] = next_pos0
-                    self.agentPosition[1] = next_pos1
-                if self.learner.joint():
-                    self.agents[0].r = (penalty0+penalty1)/2
-                else:
-                    self.agents[0].r = penalty0
-                    self.agents[1].r = penalty1
-            #print('({0},{1}),({2},{3})'.format(self.agentPosition[0][0],self.agentPosition[0][1],self.agentPosition[1][0],self.agentPosition[1][1]),end="")
         else:
-            pass
+            # N>=2は共通とした
+            # ①確定リスト（場所、ID）、未移動リスト（場所、ID）、行きたい場所リスト（場所、ID)
+            next_pos = {}  # エージェントiが動きたい位置
+            not_fixed_pos ={} # 確定していないエージェントの位置
+            fixed_pos = {} # 確定したエージェントの位置
 
+            # ②まずは行先を調べてゴールに到着しているものは確定リストに、そうでないものは未移動リストと行きたい場所リストに登録
+            for i in range(self.num_of_agents):
+                self.agentOldPosition[i] = self.agentPosition[i].copy()
+                if self.learner.joint():
+                    # Joint Learnerの場合、agents[0].actionに全てのエージェントのアクションの値が含まれている
+                    next_pos1, penalty1 = self._move(i, self.agentPosition[i], self._getAction(self.agents[0].action, len(self.mv), i))
+                else:
+                    next_pos1, penalty1 = self._move(i, self.agentPosition[i], self.agents[i].action)
+                self.agents[i].r = penalty1
+                # ゴールに到達していれば確定
+                if next_pos1 == self.maze.goal[i]:
+                    fixed_pos[i] = next_pos1
+                # 到達していなければnext_posとnot_fixed_posに登録
+                else:
+                    next_pos[i] = next_pos1
+                    not_fixed_pos[i] = self.agentOldPosition[i]
 
-        """# まずは動かしてみる
-        next_pos = {} # エージェントiが動きたい位置
-        collision = {} # ある位置(y,x)に動こうとしているエージェントのリスト
-        fixed = {} # ある位置(y,x)に動くことが確定したエージェント
-        for i in range(self.num_of_agents):
-            next_pos[i] = self.agentPosition[i] + self.mv[self.agents[i].action]
-            # 干渉しているエージェントを位置ごとにリストアップ
-            if next_pos[i] not in collision:
-                collision[tuple(next_pos[i])] = [i]
-            else:
-                collision[tuple(next_pos[i])].append(i)
+            # 　③壁への衝突チェック
+            #　　未移動リストと行先リストが同じ場所であればwallということで確定リストに追加し、
+            #　　未移動リストと行きたい先リストから削除。
+            for id in set(not_fixed_pos): # keyのsetが返る
+                l = not_fixed_pos[id]
+                if l == next_pos[id]:
+                    fixed_pos[id] = l
+                    del not_fixed_pos[id]
+                    del next_pos[id]
 
-        # 干渉しているエージェントは元に戻して確定
-        for pos in collision:
-            if len(pos)>1:
-                # 干渉している
-                for i in pos:
-                    fixed[self.agentPosition[i]] = i
-                    pos.remove(i)
-                    del next_pos[i]
+            #　④同じ場所に動こうとしているものを確定
+            #　　　行きたい場所リストで同じ場所に動こうとしているものが複数あれば、行きたい場所リストと、未移動
+            #　　　リストから削除し、確定リストに追加
+            for id in set(next_pos):
+                # 最初のsetから途中で削除されるので[]でアクセスするとエラーになるのでチェックしてから
+                if next_pos.get(id):
+                    l = next_pos[id]
+                    same = [id]
+                    for id2 in set(next_pos):
+                        if id != id2 and l == next_pos[id2]:
+                            same.append(id2)
+                            fixed_pos[id2] = not_fixed_pos[id2]
+                            del not_fixed_pos[id2]
+                            del next_pos[id2]
+                            self.agents[id2].r = self.collision
+                    if len(same) > 1:
+                        fixed_pos[id] = not_fixed_pos[id]
+                        del not_fixed_pos[id]
+                        del next_pos[id]
+                        self.agents[id].r = self.collision
 
-        # 干渉によって戻った場所に動こうとしていたエージェントを元に戻して確定
-        for pos in next_pos: # まだ動けていないエージェントに対して
-            if pos in fixed:
-                fixed[]"""
+            #　⑤場所を交換しようとしているものを確定
+            #　　　行きたい場所が未移動リストにあり、その未移動リストのIDの行きたい場所が自分の場所なら、両方の
+            #　　　IDを行きたい場所から削除し、未移動リストを確定リストに移動
+            for id in set(next_pos):
+                if next_pos.get(id):
+                    for id2 in set(not_fixed_pos):
+                        if next_pos[id] == not_fixed_pos[id2] and next_pos[id2] == not_fixed_pos[id]: # 自分自身の行きたい場所が自分の場所なら③で確定されているはずなので、id!=id2
+                            fixed_pos[id] = not_fixed_pos[id]
+                            fixed_pos[id2] = not_fixed_pos[id2]
+                            del not_fixed_pos[id]
+                            del not_fixed_pos[id2]
+                            del next_pos[id]
+                            del next_pos[id2]
+                            self.agents[id].r = self.collision
+                            self.agents[id2].r = self.collision
+                            break # 一つ見つかればもう見つからない
+
+            #　⑥動けるエージェントと動けないエージェントを確定を未移動リストが無くなるまで繰り返す
+            #　　　行きたい場所リストに対して、行先が確定リストになく、未移動リストにもなければ、
+            #　　　行きたい場所リストから削除し、確定リストに追加。同じIDの未移動リストからも削除
+            #　　　行先が確定リストにあれば、未移動リストから確定リストに移動させて、行きたい場所リストを削除
+            while(True):
+                for id in set(next_pos):
+                    if (not self._in(next_pos[id],not_fixed_pos)) and (not self._in(next_pos[id],fixed_pos)):
+                        # 動けること確定
+                        fixed_pos[id] = next_pos[id]
+                        del next_pos[id]
+                        del not_fixed_pos[id]
+                    elif self._in(next_pos[id],fixed_pos):
+                        # 動けないこと確定
+                        fixed_pos[id] = not_fixed_pos[id]
+                        del next_pos[id]
+                        del not_fixed_pos[id]
+                        self.agents[id].r = self.collision
+                if len(not_fixed_pos)==0:
+                    break
+
+            # ⑦確定した場所に動かす
+            self.isGoal = True
+            for i in range(self.num_of_agents):
+                self.agentPosition[i] = fixed_pos[i]
+                if self.agentPosition[i] != self.maze.goal[i]:
+                    self.isGoal = False
 
         if self.learner.joint():
             self.agents[0].earned_reward += self.agents[0].r
@@ -188,6 +221,14 @@ class MultiMaze():
                 ret.append([self.yx2state[tuple(self.agentPosition[i])]])
         return ret
 
+    def getNewState(self, old_state):
+        # 1つの前の状態を入力として、現在の状態を返す
+        # 同じ場所には１つのエージェントしかいない前提
+        for i in range(self.num_of_agents):
+            if old_state == self.yx2state[tuple(self.agentOldPosition[i])]:
+                return self.yx2state[tuple(self.agentPosition[i])]
+        return -1 # ここにはこないはず。来たら例外になるはず
+
     def getOthersOldState(self, id):
         # id以外のエージェントの１つ前の状態のリストを返す。状態は１次元でもリストで定義する
         ret = []
@@ -203,10 +244,10 @@ class MultiMaze():
         return state
 
     def _move(self,i,pos,action):
-        if pos == [1,4] and action == 1:
-            pass
-        # 特定の位置で特定の行動をした場合の、他のエージェントを考慮しない移動結果を返す
+        # 特定の位置で特定の行動をした場合の、他のエージェントを考慮しない移動位置を返す
+        # 実際に移動はしない
         # ゴールに辿り着いたエージェントは動かない
+        # リストを返しているがタプルの方が良いのでは？
         if pos == self.maze.goal[i]:
             penalty = 0 # 先についたエージェントに報酬を与えなくて良いのか？与え続けるのはおかしい気がする
             newpos = pos.copy()
@@ -220,6 +261,17 @@ class MultiMaze():
             newpos = pos.copy()
         return newpos, penalty
 
+    def _getAction(self, action, n_act, n_agent, id):
+        # action = a0 * n_act^(n_agent-0) + a1 * n_act^(n_agent-1) + a_n_agent * n_act^(n_agent-n_agent)となっていることを仮定
+        a = action // pow(n_act,n_agent-id)
+        n_act_id = a % n_act
+        return n_act_id
+
+    def _in(self,pos,dict):
+        for id in set(dict):
+            if pos == dict[id]:
+                return True
+        return False
 
 if __name__ == '__main__':
     params = {

@@ -1,14 +1,13 @@
-from MultiAgentRL import MultiAgentRL
-from DrawAveStepsGrapth import *
-from Agent import *
-from JSQLearner import *
-from CQLearner import *
-from PCQLearner import *
-from AreaFullView import *
-import numpy as np
-from datetime import datetime
-import csv
 import time
+from datetime import datetime
+
+import numpy as np
+
+from DrawAveStepsGrapth import *
+from MultiAgentRL import MultiAgentRL
+from PCQLearner import *
+from old.AreaFullView import *
+
 
 class MultiPursuit:
     # 完全独立での学習と、マルチエージェントでのQ-Learning/PHC/WoLF-PHCでの学習をサポート。JAL(一般的)はCentralPursuitで扱う

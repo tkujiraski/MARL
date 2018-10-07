@@ -1,11 +1,7 @@
-from MultiPursuit import *
-from DrawAveStepsGrapth import *
 from ERLearner import *
-import csv
 from MultiMaze import *
-from Tunnel2Goal import *
-from ISR import *
-from CIT import *
+from CMU import *
+from TunnelToGoal3 import *
 
 # シングルで学習した場合のQ値と、各状態・行動に対する平均即時報酬のデータを作成する
 if __name__ == '__main__':
@@ -22,9 +18,11 @@ if __name__ == '__main__':
         'window_size':20}
 
     learner = ERLearner
-    maze = Tunnel2Goal()
+    #maze = Tunnel2Goal()
     #maze = ISR()
     #maze = CIT()
+    maze = CMU()
+    #maze = TunnelToGoal3()
 
     # 課題を１エージェント版に書き換えて実行
     num_of_agents = maze.num_of_agents
@@ -57,4 +55,4 @@ if __name__ == '__main__':
             m.multi_q.agents[0].q.saveQvalue(filename+'_qvalue'+str(i))
             m.multi_q.agents[0].saveER(filename+'_ER'+str(i))
 
-        drg = DrawAveStepsGraph([filename+'.csv'],100,params['maxEpisodes'])
+        drg = DrawAveStepsGraph([filename+'.csv'],['ER'],100,params['maxEpisodes'])

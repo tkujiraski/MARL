@@ -5,6 +5,8 @@ import io
 from Tunnel2Goal import *
 from ISR import *
 from CIT import *
+from CMU import *
+from TunnelToGoal3 import *
 
 class DrawMaze:
     def __init__(self, maze):
@@ -52,4 +54,6 @@ class DrawMaze:
 if __name__ == '__main__':
     #ret = DrawMaze(Tunnel2Goal())
     #ret = DrawMaze(ISR())
-    ret = DrawMaze(CIT())
+    #ret = DrawMaze(CIT())
+    ret = DrawMaze(CMU())
+    #ret = DrawMaze(TunnelToGoal3())

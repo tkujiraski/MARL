@@ -55,8 +55,16 @@ class CQLearner(Agent):
             else:
                 # Select a_k(t) according to Q_k~aug
                 # 候補となるQ_k~augが複数ある場合(近くにエージェントが複数いる場合）どうするか？
+                # a) 一番近いエージェントのQを考慮する → ドメイン依存な処理になってしまう
+                # b) ランダムに選ぶ
+                # c) 最大のQ値を選ぶ(最も考慮すべき状況・行動と考えられる？)
 
-                self.action = atode
+                # まずb)を実装してみる。D論ではc)との比較もしても良いかも
+                if rnd < self.eps:
+                    self.action = random.randint(0, self.naction - 1)
+                else:
+                    q_selected = random.randint(0, len(self.others)-1)
+                    self.action = self.Qaug[tuple(self.state+self.others[q_selected])].getMaxAction()
         else:
             if rnd < self.eps:
                 # ランダムな行動選択
@@ -118,12 +126,16 @@ class CQLearner(Agent):
 
     def updateQ(self):
         if self.update:
+            # 2つ以上のエージェントと同時に干渉した場合、実際には行動選択に使っていないQaugもアップデートしている(合理的)
             for other in self.others: # 行動を選んだ時の他のエージェントの状態
                 self.Qaug[tuple(self.old_s+other)].q[self.action] = (1-self.alpha)*self.Qaug[tuple(self.old_s+other)].q[self.action] +self.alpha*(self.r + self.gamma*self.q.getMaxQ(self.state))
         return
 
     def _readER(self,filename):
         return np.load(filename+".npy")
+
+    def get_augmented_states(self):
+        return self.Qaug
 
 class AugmentedQ():
     # 記録構造は、アクセス方法を見てから決める
