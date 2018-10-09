@@ -22,6 +22,9 @@ class MultiAgentRL():
         self.adic = adic
 
     def learn(self):
+        q = []
+        q.append([])
+        q.append([])
         for ep in range(self.maxEpisodes):
             print('#episode %d' % ep)
             # 状態sを初期化
@@ -53,6 +56,13 @@ class MultiAgentRL():
                 # 各エージェントのQTableやポリシーの更新
                 self._update()
 
+                # check用
+                if ep > 1 and ep % 10000 == 0:
+                    q[0].append(self.agents[0].Qaug[(9,19)])
+                    q[1].append(self.agents[1].Qaug[(19, 9)])
+                if ep>1000 and step == 15:
+                    print("Over 15")
+
                 # sが終端状態もしくは最大ステップに到達したらエピソードを終了
                 if self.check_goal():
                     print('終了状態へ到達 %d step' % step)
@@ -61,6 +71,7 @@ class MultiAgentRL():
                 if step == self.maxSteps - 1:
                     self.stepsForGoal.append(step)
                     break
+        print("Stop")
 
     # アルゴリズムごとにOverrideされる処理
     # デフォルトは完全独立なQ-Learning

@@ -69,6 +69,7 @@ class MultiMaze():
         # 環境の初期化。
         for i in range(self.num_of_agents):
             self.agentPosition[i] = self.maze.start[i]
+            self.agents[i].route = [self.maze.start[i]]
         # 初期状態を表現
         self.state = self._make_state_expression()
         self.isGoal = False
@@ -192,6 +193,7 @@ class MultiMaze():
             self.isGoal = True
             for i in range(self.num_of_agents):
                 self.agentPosition[i] = fixed_pos[i]
+                self.agents[i].route.append(fixed_pos[i])
                 if self.agentPosition[i] != self.maze.goal[i]:
                     self.isGoal = False
 
@@ -275,23 +277,26 @@ class MultiMaze():
 
 if __name__ == '__main__':
     params = {
-        'num_of_agents':2,
         'walk': -1,
         'wall': -1,
-        'collision': -20,
-        'goal':10,
-        'eps': 0.3,
-        'gamma': 0.8,
+        'collision': -10,
+        'goal': 10,
+        'eps': 0.1,
+        'gamma': 1.0,
         'alpha': 0.1,
-        'maxEpisodes': 20000,
-        'maxSteps': 3000,
+        'maxEpisodes': 200000,
+        'maxSteps': 300000,
         'window_size': 20,
-        'p_threshold': 0.01
-              }
+        'p_threshold': 0.01}
+
+    maze = Tunnel2Goal
+    params['init_qvalue0'] = 'result/maze/Tunnel2Goal_qvalue0_e0.3g1.0ep200000'
+    params['init_qvalue1'] = 'result/maze/Tunnel2Goal_qvalue1_e0.3g1.0ep200000'
+    params['ER0'] = 'result/maze/Tunnel2Goal_ER0_e0.3g1.0ep200000'
+    params['ER1'] = 'result/maze/Tunnel2Goal_ER1_e0.3g1.0ep200000'
 
     start = time.time()
-    a = Tunnel2Goal()
-    m = MultiMaze(JSQLearner,params,a)
+    m = MultiMaze(CQLearner,params,maze())
     m.multi_q.learn()
     elapsed_time = time.time() - start
     print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
