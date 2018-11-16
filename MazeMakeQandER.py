@@ -1,7 +1,11 @@
 from ERLearner import *
 from MultiMaze import *
+from Tunnel2Goal import *
+from ISR import *
+from CIT import *
 from CMU import *
 from TunnelToGoal3 import *
+from TunnelToGoal4 import *
 
 # シングルで学習した場合のQ値と、各状態・行動に対する平均即時報酬のデータを作成する
 if __name__ == '__main__':
@@ -21,8 +25,9 @@ if __name__ == '__main__':
     #maze = Tunnel2Goal()
     #maze = ISR()
     #maze = CIT()
-    maze = CMU()
+    #maze = CMU()
     #maze = TunnelToGoal3()
+    maze = TunnelToGoal4()
 
     # 課題を１エージェント版に書き換えて実行
     num_of_agents = maze.num_of_agents

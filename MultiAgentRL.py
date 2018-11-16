@@ -57,11 +57,8 @@ class MultiAgentRL():
                 self._update()
 
                 # check用
-                if ep > 1 and ep % 10000 == 0:
-                    q[0].append(self.agents[0].Qaug[(9,19)])
-                    q[1].append(self.agents[1].Qaug[(19, 9)])
-                if ep>1000 and step == 15:
-                    print("Over 15")
+                if ep>1000 and step == 100:
+                    print("Over 100")
 
                 # sが終端状態もしくは最大ステップに到達したらエピソードを終了
                 if self.check_goal():
@@ -71,7 +68,6 @@ class MultiAgentRL():
                 if step == self.maxSteps - 1:
                     self.stepsForGoal.append(step)
                     break
-        print("Stop")
 
     # アルゴリズムごとにOverrideされる処理
     # デフォルトは完全独立なQ-Learning
@@ -96,3 +92,43 @@ class MultiAgentRL():
         ax = fig.add_subplot(1, 1, 1)
         ax.plot(range(self.maxEpisodes), self.stepsForGoal, c='black')
         plt.show()
+
+    def replay(self):
+        # 状態sを初期化
+        self.env_init()
+
+        # greedyに行動
+        for agent in self.agents:
+            agent.eps = 0.0
+
+        # 初期状態の観測
+        for agent in self.agents:
+            agent.state = self.observe(agent)
+
+        # 各ステップでの行動選択・行動・Qテーブル更新
+        for step in range(self.maxSteps):
+            # 各エージェントごとの行動を選ぶ
+            self._selectActions()
+
+            # 行動する前に現在の状態をold_sに保存
+            for agent in self.agents:
+                agent.old_s = agent.state.copy()
+
+            # 選択された行動を実行し、状態遷移と、報酬の決定を行う
+            self.env_update(self.agents)  # 全てのエージェントの行動が選択された後で行動を行い環境を更新
+
+            # 各エージェントが知覚する状態を取得する
+            for agent in self.agents:
+                agent.state = self.observe(agent)
+
+            # Sparse Interaction関連の処理
+            self._sparse_interaction()
+
+            # updateはなし
+
+            # sが終端状態もしくは最大ステップに到達したらエピソードを終了
+            if self.check_goal():
+                print('終了状態へ到達 %d step' % step)
+                break
+            if step == self.maxSteps - 1:
+                break

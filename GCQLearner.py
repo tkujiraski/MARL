@@ -17,14 +17,17 @@ class GCQLearner(CQLearner):
 
             if len(self.others)==0:
                 # Select a_k(t) according to Q_k
+                self.Qlog.append(0)
                 self.action = self.q.getMaxAction(self.state) # greedyに行動する
             elif len(self.others)==1:
                 # Select a_k(t) according to Q_k~aug
+                self.Qlog.append(1)
                 if rnd < self.eps:
                     self.action = random.randint(0, self.naction - 1)
                 else:
                     self.action = self.Qaug[tuple(self.state+self.others[0])].getMaxAction()
             else:
+                self.Qlog.append(1)
                 # Select a_k(t) according to Q_k~aug
                 # 候補となるQ_k~augが複数ある場合(近くにエージェントが複数いる場合）どうするか？
                 # a) 一番近いエージェントのQを考慮する → ドメイン依存な処理になってしまう
@@ -38,6 +41,7 @@ class GCQLearner(CQLearner):
                     q_selected = random.randint(0, len(self.others)-1)
                     self.action = self.Qaug[tuple(self.state+self.others[q_selected])].getMaxAction()
         else:
+            self.Qlog.append(0)
             self.action = self.q.getMaxAction(self.state)
-
+        self.actlog.append(self.action)
         return

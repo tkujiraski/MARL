@@ -9,6 +9,7 @@ from ISR import *
 from CIT import *
 from CMU import *
 from TunnelToGoal3 import *
+from TunnelToGoal4 import *
 
 if __name__ == '__main__':
     params = {
@@ -19,29 +20,24 @@ if __name__ == '__main__':
         'eps': 0.1,
         'gamma': 1.0,
         'alpha': 0.1,
-        'maxEpisodes': 200000,
-        'maxSteps': 300000,
+        'maxEpisodes': 10000,
+        'maxSteps': 100000,
         'window_size': 20,
         'p_threshold': 0.01}
 
     # 迷路を変えるときは下記のparamsもコメントアウトを切り替える
 
-    """maze = Tunnel2Goal
+    maze = Tunnel2Goal
     params['init_qvalue0'] = 'result/maze/Tunnel2Goal_qvalue0_e0.3g1.0ep200000'
     params['init_qvalue1'] = 'result/maze/Tunnel2Goal_qvalue1_e0.3g1.0ep200000'
     params['ER0'] = 'result/maze/Tunnel2Goal_ER0_e0.3g1.0ep200000'
-    params['ER1'] = 'result/maze/Tunnel2Goal_ER1_e0.3g1.0ep200000'"""
+    params['ER1'] = 'result/maze/Tunnel2Goal_ER1_e0.3g1.0ep200000'
 
-    maze = ISR
+    """maze = ISR
     params['init_qvalue0'] = 'result/maze/ISR_qvalue0_e0.3g1.0ep200000'
     params['init_qvalue1'] = 'result/maze/ISR_qvalue1_e0.3g1.0ep200000'
     params['ER0'] = 'result/maze/ISR_ER0_e0.3g1.0ep200000'
-    params['ER1'] = 'result/maze/ISR_ER1_e0.3g1.0ep200000'
-
-    """params['init_qvalue0'] = 'result/maze/CIT_qvalue0_e0.3g1.0ep200000'
-    params['init_qvalue1'] = 'result/maze/CIT_qvalue1_e0.3g1.0ep200000'
-    params['ER0'] = 'result/maze/CIT_ER0_e0.3g1.0ep200000'
-    params['ER1'] = 'result/maze/CIT_ER1_e0.3g1.0ep200000'"""
+    params['ER1'] = 'result/maze/ISR_ER1_e0.3g1.0ep200000'"""
 
     """maze = CIT
     params['init_qvalue0'] = 'result/maze/CIT_qvalue0_e0.3g1.0ep200000'
@@ -63,16 +59,26 @@ if __name__ == '__main__':
     params['ER1'] = 'result/maze/TunnelToGoal3_ER1_e0.3g1.0ep200000'
     params['ER2'] = 'result/maze/TunnelToGoal3_ER2_e0.3g1.0ep200000'"""
 
-    trial = 50
+    """maze = TunnelToGoal4
+    params['init_qvalue0'] = 'result/maze/TunnelToGoal4_qvalue0_e0.3g1.0ep200000'
+    params['init_qvalue1'] = 'result/maze/TunnelToGoal4_qvalue1_e0.3g1.0ep200000'
+    params['init_qvalue2'] = 'result/maze/TunnelToGoal4_qvalue2_e0.3g1.0ep200000'
+    params['init_qvalue3'] = 'result/maze/TunnelToGoal4_qvalue3_e0.3g1.0ep200000'
+    params['ER0'] = 'result/maze/TunnelToGoal4_ER0_e0.3g1.0ep200000'
+    params['ER1'] = 'result/maze/TunnelToGoal4_ER1_e0.3g1.0ep200000'
+    params['ER2'] = 'result/maze/TunnelToGoal4_ER2_e0.3g1.0ep200000'
+    params['ER3'] = 'result/maze/TunnelToGoal4_ER3_e0.3g1.0ep200000'"""
+
+    trial = 1
     np.random.seed(seed=1)
 
     #learner = Agent
     #learner = JSQLearner
     #learner = JSAQLearner
-    #learner = CQLearner
+    learner = CQLearner
     #learner = GCQLearner
     #learner = PCQLearner2
-    learner = GPCQLearner
+    #learner = GPCQLearner
 
 
     #filename = 'log/'+__file__.split('/')[-1]+datetime.now().strftime("%Y%m%d_%H%M%S")+'.csv'
@@ -101,5 +107,9 @@ if __name__ == '__main__':
             avetime /= trial
             print("average time:{0}".format(avetime)+"[sec]")
             print(header)
+    # Greedyに動かして経路を出力
+    m.multi_q.replay()
+    for i in range(m.num_of_agents):
+        print(i,m.route[i],m.agents[i].get_log())
 
     drg = DrawAveStepsGraph([filename],[learner.__name__],100,params['maxEpisodes'])

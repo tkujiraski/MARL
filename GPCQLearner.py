@@ -8,7 +8,7 @@ class GPCQLearner(GCQLearner):
     def updateQ(self):
         if self.update:
             for other in self.others:
-                new_other = [self.env.getNewState(other)]
+                new_other = self.env.getNewState(other)
                 if tuple(self.state + new_other) in self.Qaug:
                     self.Qaug[tuple(self.old_s + other)].q[self.action] = (1 - self.alpha) * self.Qaug[tuple(self.old_s + other)].q[self.action] + self.alpha * (self.r + self.gamma * self.Qaug[tuple(self.state+new_other)].getMaxQ())
                 else:

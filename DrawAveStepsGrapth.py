@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class DrawAveStepsGraph:
-    def __init__(self,filenames,legends,avestep,maxEpisodes, start=0):
+    def __init__(self,filenames,legends,avestep,maxEpisodes, start=0, title=''):
         c = ['blue','red','green','black','grey','pink','purple','orange']
+        ls = ['-','--',':','-.']
         num = len(filenames)
         drawdata = []
         for filename in filenames:
@@ -35,12 +36,15 @@ class DrawAveStepsGraph:
             print(filename+": ave={0}, std={1}, std_each={2}".format(last100ave,last100std,last100std_each))
 
         fig = plt.figure()
-        plt.xlabel('Episodes[x100]')
-        plt.ylabel('Steps to goals')
+        plt.xlabel('episodes [x100]')
+        plt.ylabel('average number of steps to goal')
+        plt.title(title)
 
         ax = fig.add_subplot(1, 1, 1)
         for i in range(len(filenames)):
-            ax.plot(range(len(drawdata[i][start//avestep:])), drawdata[i][start//avestep:], c=c[i], label=legends[i])
+            #ax.plot(range(start//avestep,len(drawdata[i][start//avestep:])+start//avestep), drawdata[i][start//avestep:], c=c[i], label=legends[i])
+            ax.plot(range(start // avestep, len(drawdata[i][start // avestep:]) + start // avestep),
+                    drawdata[i][start // avestep:], linestyle=ls[i], color='black', label=legends[i])
         plt.legend()
         plt.show()
 
@@ -109,6 +113,133 @@ if __name__ == '__main__':
                              'result/maze/ep200000/GPCQLearnerCITe0.1g1.0wall-1step300000trial50.csv'],['CQ','GCQ','PCQ','GPCQ'], 100,
                             20000)"""
 
-    drg = DrawAveStepsGraph(['log/GPCQLearnerTunnel2Goale0.1g1.0wall-1step300000trial1.csv']
-                            , ['GPCQ'], 100,
-                            200000)
+    #drg = DrawAveStepsGraph(['log/memoした/GPCQLearnerISRe0.1g1.0wall-1step300000trial50.csv'], ['GPCQ'], 100,10000)
+
+    # 論文用の評価結果
+    files = [
+        "log/交叉チェック付き/AgentTunnel2Goale0.1g1.0wall-1step300000trial50",
+        "log/交叉チェック付き/JSQLearnerTunnel2Goale0.1g1.0wall-1step300000trial50",
+        "log/JS200000/JSAQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50",  # 1万回は省略して集計だけ1万回と20万回で行った
+        "log/交叉チェック付き/CQLearnerTunnel2Goale0.1g1.0wall-1step300000trial50",
+        "log/GPCQ修正/GCQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/PCQLearner2Tunnel2Goale0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/GPCQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50",
+
+        "log/交叉チェック付き/AgentISRe0.1g1.0wall-1step300000trial50",
+        "log/交叉チェック付き/JSQLearnerISRe0.1g1.0wall-1step300000trial50",
+        "log/JS200000/JSAQLearnerISRe0.1g1.0wall-1step10000trial50",  # 1万回は省略して集計だけ1万回と20万回で行った
+        "log/交叉チェック付き/CQLearnerISRe0.1g1.0wall-1step300000trial50",
+        "log/GPCQ修正/GCQLearnerISRe0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/PCQLearner2ISRe0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/GPCQLearnerISRe0.1g1.0wall-1step10000trial50",
+
+        "log/交叉チェック付き/AgentCITe0.1g1.0wall-1step300000trial50",
+        "log/交叉チェック付き/JSQLearnerCITe0.1g1.0wall-1step300000trial50",
+        "log/JS200000/JSAQLearnerCITe0.1g1.0wall-1step10000trial50",  # 1万回は省略して集計だけ1万回と20万回で行った
+        "log/交叉チェック付き/CQLearnerCITe0.1g1.0wall-1step300000trial50",
+        "log/GPCQ修正/GCQLearnerCITe0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/PCQLearner2CITe0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/GPCQLearnerCITe0.1g1.0wall-1step10000trial50",
+
+        "log/交叉チェック付き/AgentCMUe0.1g1.0wall-1step300000trial50",
+        "log/交叉チェック付き/JSQLearnerCMUe0.1g1.0wall-1step300000trial50",
+        "log/JS200000/JSAQLearnerCMUe0.1g1.0wall-1step10000trial50",  # 1万回は省略して集計だけ1万回と20万回で行った
+        "log/交叉チェック付き/CQLearnerCMUe0.1g1.0wall-1step300000trial50",
+        "log/交叉チェック付き/PCQLearner2CMUe0.1g1.0wall-1step300000trial50",
+        "log/GPCQ修正/GCQLearnerCMUe0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/PCQLearner2CMUe0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/GPCQLearnerCMUe0.1g1.0wall-1step10000trial50",
+
+        "log/交叉チェック付き/AgentTunnelToGoal3e0.1g1.0wall-1step300000trial50",
+        "log/交叉チェック付き/JSQLearnerTunnelToGoal3e0.1g1.0wall-1step300000trial50",
+        "log/JS200000/JSAQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial50",  # 1万回は省略して集計だけ1万回と20万回で行った
+        "log/交叉チェック付き/CQLearnerTunnelToGoal3e0.1g1.0wall-1step300000trial50",
+        "log/GPCQ修正/GCQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/PCQLearner2TunnelToGoal3e0.1g1.0wall-1step10000trial50",
+        "log/GPCQ修正/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial50",
+
+        "log/JS200000/JSQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50",
+        "log/JS200000/JSQLearnerISRe0.1g1.0wall-1step10000trial50",
+        "log/JS200000/JSQLearnerCITe0.1g1.0wall-1step10000trial50",
+        "log/JS200000/JSQLearnerCMUe0.1g1.0wall-1step10000trial50",
+        "log/JS200000/JSQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial50"]
+
+    # 論文用のグラフ
+    # Q-Learningの拡張手法の学習曲線。
+    """drg = DrawAveStepsGraph(['log/交叉チェック付き/AgentTunnel2Goale0.1g1.0wall-1step300000trial50.csv','log/交叉チェック付き/JSQLearnerTunnel2Goale0.1g1.0wall-1step300000trial50.csv','log/JS200000/JSAQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50.csv'],['independent-learning','JSQ-learning','JSAQ-learning'],100,10000, title = 'Tunnel2Goal')
+    drg = DrawAveStepsGraph(['log/交叉チェック付き/AgentISRe0.1g1.0wall-1step300000trial50.csv','log/交叉チェック付き/JSQLearnerISRe0.1g1.0wall-1step300000trial50.csv','log/JS200000/JSAQLearnerISRe0.1g1.0wall-1step10000trial50.csv'],['independent-learning', 'JSQ-learning', 'JSAQ-learning'], 100, 10000, title = 'ISR')
+    drg = DrawAveStepsGraph(['log/交叉チェック付き/AgentCITe0.1g1.0wall-1step300000trial50.csv','log/交叉チェック付き/JSQLearnerCITe0.1g1.0wall-1step300000trial50.csv','log/JS200000/JSAQLearnerCITe0.1g1.0wall-1step10000trial50.csv'],['independent-learning', 'JSQ-learning', 'JSAQ-learning'], 100, 10000, title = 'CIT')
+    drg = DrawAveStepsGraph(['log/交叉チェック付き/AgentCMUe0.1g1.0wall-1step300000trial50.csv',
+                             'log/交叉チェック付き/JSQLearnerCMUe0.1g1.0wall-1step300000trial50.csv',
+                             'log/JS200000/JSAQLearnerCMUe0.1g1.0wall-1step10000trial50.csv'],
+                            ['independent-learning', 'JSQ-learning', 'JSAQ-learning'], 100, 10000, title = 'CMU')"""
+    drg = DrawAveStepsGraph(['log/交叉チェック付き/AgentTunnelToGoal3e0.1g1.0wall-1step300000trial50.csv',
+                             'log/交叉チェック付き/JSQLearnerTunnelToGoal3e0.1g1.0wall-1step300000trial50.csv',
+                             'log/JS200000/JSAQLearnerTunnelToGoal3e0.1g1.0wall-1step1000000trial50.csv'],
+                            ['independent-learning', 'JSQ-learning', 'JSAQ-learning'], 100, 10000, title = 'TunnelToGoal3')
+
+    # 1万回での学習曲線を載せるか？カラーになるし。
+    """drg = DrawAveStepsGraph(["log/交叉チェック付き/JSQLearnerTunnel2Goale0.1g1.0wall-1step300000trial50.csv",
+                             "log/JS200000/JSAQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50.csv",
+                             # 1万回は省略して集計だけ1万回と20万回で行った
+                             "log/交叉チェック付き/CQLearnerTunnel2Goale0.1g1.0wall-1step300000trial50.csv",
+                             "log/GPCQ修正/GCQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/PCQLearner2Tunnel2Goale0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/GPCQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50.csv"],
+                            ['JSQ', 'JSAQ', 'CQ', 'GCQ', 'PCQ', 'GPCQ'], 100, 10000)
+    drg = DrawAveStepsGraph(["log/JS200000/JSQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50.csv","log/JS200000/JSAQLearnerTunnel2Goale0.1g1.0wall-1step10000trial50.csv"],['JSQ200000','JSAQ200000'],100,200000)
+    """
+
+    """drg = DrawAveStepsGraph(["log/交叉チェック付き/JSQLearnerISRe0.1g1.0wall-1step300000trial50.csv",
+                             "log/JS200000/JSAQLearnerISRe0.1g1.0wall-1step10000trial50.csv",
+                             # 1万回は省略して集計だけ1万回と20万回で行った
+                             "log/交叉チェック付き/CQLearnerISRe0.1g1.0wall-1step300000trial50.csv",
+                             "log/GPCQ修正/GCQLearnerISRe0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/PCQLearner2ISRe0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/GPCQLearnerISRe0.1g1.0wall-1step10000trial50.csv"],
+                            ['JSQ', 'JSAQ', 'CQ', 'GCQ', 'PCQ', 'GPCQ'], 100, 10000)
+    drg = DrawAveStepsGraph(["log/JS200000/JSQLearnerISRe0.1g1.0wall-1step10000trial50.csv",
+                             "log/JS200000/JSAQLearnerISRe0.1g1.0wall-1step10000trial50.csv"],['JSQ200000','JSAQ200000'],100,200000)"""
+
+    """drg = DrawAveStepsGraph(["log/交叉チェック付き/JSQLearnerCITe0.1g1.0wall-1step300000trial50.csv",
+                             "log/JS200000/JSAQLearnerCITe0.1g1.0wall-1step10000trial50.csv",
+                             # 1万回は省略して集計だけ1万回と20万回で行った
+                             "log/交叉チェック付き/CQLearnerCITe0.1g1.0wall-1step300000trial50.csv",
+                             "log/GPCQ修正/GCQLearnerCITe0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/PCQLearner2CITe0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/GPCQLearnerCITe0.1g1.0wall-1step10000trial50.csv"],
+                            ['JSQ', 'JSAQ', 'CQ', 'GCQ', 'PCQ', 'GPCQ'], 100, 10000,9000)
+    drg = DrawAveStepsGraph(["log/JS200000/JSQLearnerCITe0.1g1.0wall-1step10000trial50.csv",
+                             "log/JS200000/JSAQLearnerCITe0.1g1.0wall-1step10000trial50.csv"],
+                            ['JSQ200000', 'JSAQ200000'], 100, 200000)"""
+
+    """drg = DrawAveStepsGraph(["log/交叉チェック付き/JSQLearnerCMUe0.1g1.0wall-1step300000trial50.csv",
+                             "log/JS200000/JSAQLearnerCMUe0.1g1.0wall-1step10000trial50.csv",
+                             # 1万回は省略して集計だけ1万回と20万回で行った
+                             "log/交叉チェック付き/CQLearnerCMUe0.1g1.0wall-1step300000trial50.csv",
+                             "log/GPCQ修正/GCQLearnerCMUe0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/PCQLearner2CMUe0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/GPCQLearnerCMUe0.1g1.0wall-1step10000trial50.csv"],
+                            ['JSQ', 'JSAQ', 'CQ', 'GCQ', 'PCQ', 'GPCQ'], 100, 10000)
+    drg = DrawAveStepsGraph(["log/JS200000/JSQLearnerCMUe0.1g1.0wall-1step10000trial50.csv",
+                             "log/JS200000/JSAQLearnerCMUe0.1g1.0wall-1step10000trial50.csv"],
+                            ['JSQ200000', 'JSAQ200000'], 100, 200000)"""
+
+    """drg = DrawAveStepsGraph(["log/交叉チェック付き/JSQLearnerTunnelToGoal3e0.1g1.0wall-1step300000trial50.csv",
+                             "log/JS200000/JSAQLearnerTunnelToGoal3e0.1g1.0wall-1step1000000trial50.csv",
+                             # 1万回は省略して集計だけ1万回と20万回で行った
+                             "log/交叉チェック付き/CQLearnerTunnelToGoal3e0.1g1.0wall-1step300000trial50.csv",
+                             "log/GPCQ修正/GCQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/PCQLearner2TunnelToGoal3e0.1g1.0wall-1step10000trial50.csv",
+                             "log/GPCQ修正/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial50.csv"],
+                            ['JSQ', 'JSAQ', 'CQ', 'GCQ', 'PCQ', 'GPCQ'], 100, 10000)
+    drg = DrawAveStepsGraph(["log/JS200000/JSQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial50.csv",
+                             "log/JS200000/JSAQLearnerTunnelToGoal3e0.1g1.0wall-1step1000000trial50.csv"],
+                            ['JSQ200000', 'JSAQ200000'], 100, 200000)"""
+
+    # TunnelToGoal3でも回数が増えると勝つという話をするか？
+    #drg = DrawAveStepsGraph(['log/30万回/JSQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial2.csv','log/30万回/CQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial2.csv','log/30万回/GCQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial2.csv','log/30万回/PCQLearner2TunnelToGoal3e0.1g1.0wall-1step10000trial2.csv','log/30万回/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial2.csv'],['JSQ-Learner','CQ-Learner','GCQ-Learner','PCQ-Learner','GPCQ-Learner'],100,200000)
+    """drg = DrawAveStepsGraph(['log/30万回/JSQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial2.csv',
+                             'log/30万回/CQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial2.csv',
+                             'log/30万回/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial2.csv'],
+                            ['JSQ-Learner','CQ-Learner', 'GPCQ-Learner'], 100, 300000,200000)"""

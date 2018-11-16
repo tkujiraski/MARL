@@ -37,6 +37,13 @@ class Agent:
     def initState(self):
         # 状態を初期化する
         self.earned_reward = 0
+        self.actlog = []
+
+    def changeEpsilon(self, val):
+        self.eps = val
+
+    def changeAlpha(self, val):
+        self.alpha = val
 
     def selectAct(self):
         # デフォルトではe-GreedyでargmaxQ(a|s)
@@ -46,6 +53,7 @@ class Agent:
             self.action = random.randint(0, self.naction - 1)
         else:
             self.action = self.q.getMaxAction(self.state)
+        self.actlog.append(self.action)
         return
 
     def sparse_interaction(self):
@@ -67,3 +75,6 @@ class Agent:
 
     def get_augmented_states(self):
         return []
+
+    def get_log(self):
+        return self.actlog
