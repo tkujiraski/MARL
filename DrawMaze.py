@@ -8,6 +8,7 @@ from CIT import *
 from CMU import *
 from TunnelToGoal3 import *
 from TunnelToGoal4 import *
+from Nine import *
 
 class DrawMaze:
     def __init__(self, maze):
@@ -58,4 +59,5 @@ if __name__ == '__main__':
     #ret = DrawMaze(CIT())
     #ret = DrawMaze(CMU())
     #ret = DrawMaze(TunnelToGoal3())
-    ret = DrawMaze(TunnelToGoal4())
+    #ret = DrawMaze(TunnelToGoal4())
+    ret = DrawMaze(Nine())

@@ -1,40 +1,33 @@
 from Environment import *
 
-class MultiMaze():
-    def __init__(self, learner, params, maze):
-        self.learner = learner # 学習アルゴリズムの指定
+class MultiPursuit:
+    # 完全独立での学習と、マルチエージェントでのQ-Learning/PHC/WoLF-PHCでの学習をサポート。JAL(一般的)はCentralPursuitで扱う
+    def __init__(self, learner, params):
+        self.learner = learner  # 学習アルゴリズムの指定
         self.params = params
-        self.maze = maze
-        self.num_of_agents = maze.num_of_agents # 迷路ごとにエージェントの数が決められる
+        self.num_of_agents = params['num_of_agents']
 
-        # Mazeならではの処理
-        self.mv = [[0, -1],[1, 0],[0, 1],[-1, 0]] # 0:left 1:down 2:right 3:up
+        # Pursuitならではの記述
+        self.mv = [[0, -1], [1, 0], [0, 1], [-1, 0]]  # 0:left 1:down 2:right 3:up
+        self.size = params['size'] # エリアの広さ size=5なら 5x5
         self.walk = params['walk']
         self.wall = params['wall']
         self.collision = params['collision']
-        self.goal = params['goal']
+        self.erate = params['erate'] # ターゲットが移動に失敗する確率
+        self.touch = params['touch'] # いずれかがタッチしているときの報酬
+        self.goal = params['goal'] # 全てのエージェントがタッチしたときのゴール報酬
+        self.targetMove = params['targetMove']  # ターゲットが移動するかどうか
+        self.startPos = params['startPos'] # 初期位置の配置のリスト
 
-        self.yx2state = {} # 座標から状態番号への変換
-        # 迷路のチェック
-        self.mazestate = 0
-        for y in range(len(maze.map)):
-            for x in range(len(maze.map[0])):
-                if maze.map[y,x,0] == 0:
-                    self.yx2state[(y,x)] = self.mazestate
-                    self.mazestate += 1
-        if maze.state != self.mazestate:
-            print("迷路の状態数が一致しません"+str(maze.state)+'/'+str(self.mazestate))
-            sys.exit(1)
-        self.agentPosition = {}
-        self.agentOldPosition = {}
+        # 移動するためのフィールドを定義
+        self.map = self._create_maze(self.size)
 
         # どの学習系を使うかで変わる設定
         #  エージェントが把握する基本的な状態数はmixed policyかどうかで変わる
-        self.nstate = [self.mazestate] # 自分の位置。ゴール位置は動かないので状態にする必要がない
+        self.nstate = [((self.size-1)*2+1)*((self.size-1)*2+1)] # ターゲットとの位置の差(dx,dy)の組合せ数
         if learner.mixed():
             for i in range(self.num_of_agents-1):
-                self.nstate = self.nstate + [self.mazestate]
-
+                self.nstate = self.nstate + [((self.size-1)*2+1)*((self.size-1)*2+1)]
         # 共通処理
         self.agents = []
         if learner.joint():
@@ -53,88 +46,72 @@ class MultiMaze():
         self.maxSteps = params['maxSteps']
 
     def env_init(self):
-        # 環境の初期化。環境全体の状態を表すstateを設定することと、isGoalをFalseにすることが必須
+        # 環境の初期化
+        # ターゲットは最後のエージェントとして位置等を記録する
+        self.agentPosition = {}
+        self.agentOldPosition = {}
         self.route = {}
-        for i in range(self.num_of_agents):
-            self.agentPosition[i] = self.maze.start[i]
-            self.route[i] = [self.maze.start[i]]
+
+        # エージェントとターゲットの位置初期化
+        if self.startPos == []:
+            for i in range(self.num_of_agents+1):
+                self.agentPosition[i] = self._random_position(i) # 重複しないように配置
+        else:
+            for i in range(self.num_of_agents+1):
+                self.agentPosition[i] = self.startPos[i].copy()
+
+        # 位置の記録開始
+        for i in range(self.num_of_agents+1):
+            self.route[i] = [self.agentPosition[i].copy()]
+
+        # 各エージェントの初期化
         if self.learner.joint():
             self.agents[0].initState()
         else:
+            # ターゲットはエージェントではないので+1は付けない
             for i in range(self.num_of_agents):
                 self.agents[i].initState()
+
         # 初期状態を表現
         self.state = self._make_state_expression()
+
         self.isGoal = False
 
     def env_update(self, agents):
-        # 必要な処理 (i)stateの更新、(ii)agents[i].rの設定、(iii)isGoalの更新
-
-        # 全てのエージェントの行動が選択されているので、それに応じて状態を更新して、各エージェントの報酬を決める
-        # Mero2009でゲームの設定を調べる！
-
-        # 衝突時の処理をどうするか？
-        # 移動先が一緒の場合、衝突として両方が元の位置に戻るとすると、戻った位置に移動しようと
-        # していたエージェントと衝突する。順番に処理してすべての干渉を考慮できるか？
-        # 例えば狭い道を４つのエージェントが列をなしている場合、全てのエージェントが左を選択すれば、
-        # 隊列は左に行ける。しかし一番左のロボットが左以外を選んで、残りが左を選んだ場合は、結局
-        # どのロボットも動けない。干渉があった場合は、干渉の影響を伝搬させる必要がある。
-        # 干渉しているものを先に処理して、その処理によって干渉が生じたら干渉のキューに入れる。
-
-        # 1つと2つの場合限定で実装してみる
         if self.num_of_agents == 1:
-            # jointやmixedであることはありえないとして実装
-            next_pos, penalty = self._move(0,self.agentPosition[0], self.agents[0].action)
             self.agentOldPosition[0] = self.agentPosition[0].copy()
-            self.agentPosition[0] = next_pos
-            if next_pos == self.maze.goal[0]:
+            self.agentOldPosition[1] = self.agentPosition[1].copy() # ターゲットの位置
+
+            # jointやmixedであることはありえないとして実装
+            next_pos0, penalty0 = self._move(0,self.agentPosition[0],self.agents[0].action)
+            if self.targetMove:
+                self.agents[1].action = np.random.randint(len(self.mv))
+                next_pos1, _ = self._move(1,self.agentPosition[1], self.agents[1].action)
+            else:
+                next_pos1 = self.agentPosition[1].copy()
+
+            if next_pos0 == next_pos1 or (self.agentPosition[0] == next_pos1 and self.agentPosition[1] == next_pos0): # 交叉しても動けない
+                pass
+            else:
+                self.agentPosition[0] = next_pos0
+                self.agentPosition[1] = next_pos1
+
+            if self._isTouch(self.agentPosition[0], self.agentPosition[1]):
+                # ターゲットにタッチした場合
                 self.isGoal = True
                 self.agents[0].r = self.goal
             else:
-                self.agents[0].r = penalty
-        elif self.num_of_agents == 2:
-            self.agentOldPosition[0] = self.agentPosition[0].copy()
-            self.agentOldPosition[1] = self.agentPosition[1].copy()
-            if self.learner.joint():
-                next_pos0, penalty0 = self._move(0,self.agentPosition[0],self.agents[0].action // len(self.mv))
-                next_pos1, penalty1 = self._move(1,self.agentPosition[1], self.agents[0].action % len(self.mv)) # 判断するのは１つだけ
-            else:
-                next_pos0, penalty0 = self._move(0,self.agentPosition[0],self.agents[0].action)
-                next_pos1, penalty1 = self._move(1,self.agentPosition[1], self.agents[1].action)
-
-            if next_pos0 == self.maze.goal[0] and next_pos1 == self.maze.goal[1]:
-                # 両者がゴールした場合
-                self.agentPosition[0] = next_pos0
-                self.agentPosition[1] = next_pos1
-                self.isGoal = True
-                if self.learner.joint():
-                    self.agents[0].r = self.goal
-                else:
-                    self.agents[0].r = self.goal
-                    self.agents[1].r = self.goal
-            else:
-                #if next_pos0 == next_pos1: # 同じ場所に動こうとすると元の位置に戻る(動けない)
-                if next_pos0 == next_pos1 or (self.agentPosition[0] == next_pos1 and self.agentPosition[1] == next_pos0): # 交叉しても動けない
-                    penalty0 = self.collision
-                    penalty1 = self.collision
-                else:
-                    self.agentPosition[0] = next_pos0
-                    self.agentPosition[1] = next_pos1
-                if self.learner.joint():
-                    self.agents[0].r = (penalty0+penalty1)/2
-                else:
-                    self.agents[0].r = penalty0
-                    self.agents[1].r = penalty1
-
+                self.agents[0].r = penalty0
         else:
-            # N>=2は共通とした
+            # N>=1は共通とした
             # ①確定リスト（場所、ID）、未移動リスト（場所、ID）、行きたい場所リスト（場所、ID)
             next_pos = {}  # エージェントiが動きたい位置
             not_fixed_pos ={} # 確定していないエージェントの位置
             fixed_pos = {} # 確定したエージェントの位置
             penalty = {}
 
-            # ②まずは行先を調べてゴールに到着しているものは確定リストに、そうでないものは未移動リストと行きたい場所リストに登録
+            # ②まずは行先を調べて未移動リストと行きたい場所リストに登録
+            # エージェントの行先
             for i in range(self.num_of_agents):
                 self.agentOldPosition[i] = self.agentPosition[i].copy()
                 if self.learner.joint():
@@ -143,13 +120,24 @@ class MultiMaze():
                 else:
                     next_pos1, penalty1 = self._move(i, self.agentPosition[i], self.agents[i].action)
                 penalty[i] = penalty1
-                # ゴールに到達していれば確定
-                if next_pos1 == self.maze.goal[i]:
-                    fixed_pos[i] = next_pos1
-                # 到達していなければnext_posとnot_fixed_posに登録
-                else:
-                    next_pos[i] = next_pos1
-                    not_fixed_pos[i] = self.agentOldPosition[i]
+                next_pos[i] = next_pos1
+                not_fixed_pos[i] = self.agentOldPosition[i]
+            # ターゲットの行先
+            self.agentOldPosition[self.num_of_agents] = self.agentPosition[self.num_of_agents].copy()
+            if self.targetMove:
+                self.agents[self.num_of_agents].action = np.random.randint(len(self.mv))
+                next_pos[self.num_of_agents], _ = self._move(self.num_of_agents,self.agentPosition[self.num_of_agents], self.agents[self.num_of_agents].action)
+            else:
+                next_pos[self.num_of_agents] = self.agentPosition[self.num_of_agents].copy()
+            not_fixed_pos[self.num_of_agents] = self.agentOldPosition[self.num_of_agents]
+
+            if self.targetMove:
+                self.agents[self.num_of_agents].action = np.random.randint(len(self.mv))
+                next_pos1, _ = self._move(self.num_of_agents, self.agentPosition[self.num_of_agents], self.agents[self.num_of_agents].action)
+            else:
+                next_pos1 = self.agentPosition[self.num_of_agents].copy()
+            next_pos[self.num_of_agents] = next_pos1
+            not_fixed_pos[self.num_of_agents] = self.agentOldPosition[self.num_of_agents]
 
             # 　③壁への衝突チェック
             #　　未移動リストと行先リストが同じ場所であればwallということで確定リストに追加し、
@@ -164,6 +152,7 @@ class MultiMaze():
             #　④同じ場所に動こうとしているものを確定
             #　　　行きたい場所リストで同じ場所に動こうとしているものが複数あれば、行きたい場所リストと、未移動
             #　　　リストから削除し、確定リストに追加
+            #      エージェントとターゲットの衝突も一旦ペナルティとしておいて、touchの場合は後で修正
             for id in set(next_pos):
                 # 最初のsetから途中で削除されるので[]でアクセスするとエラーになるのでチェックしてから
                 if next_pos.get(id):
@@ -185,6 +174,7 @@ class MultiMaze():
             #　⑤場所を交換しようとしているものを確定
             #　　　行きたい場所が未移動リストにあり、その未移動リストのIDの行きたい場所が自分の場所なら、両方の
             #　　　IDを行きたい場所から削除し、未移動リストを確定リストに移動
+            #      エージェントとターゲットの衝突も一旦ペナルティとしておいて、touchの場合は後で修正
             for id in set(next_pos):
                 if next_pos.get(id):
                     for id2 in set(not_fixed_pos):
@@ -203,6 +193,7 @@ class MultiMaze():
             #　　　行きたい場所リストに対して、行先が確定リストになく、未移動リストにもなければ、
             #　　　行きたい場所リストから削除し、確定リストに追加。同じIDの未移動リストからも削除
             #　　　行先が確定リストにあれば、未移動リストから確定リストに移動させて、行きたい場所リストを削除
+            #      エージェントとターゲットの衝突も一旦ペナルティとしておいて、touchの場合は後で修正
             while(True):
                 for id in set(next_pos):
                     if (not self._in(next_pos[id],not_fixed_pos)) and (not self._in(next_pos[id],fixed_pos)):
@@ -220,13 +211,18 @@ class MultiMaze():
                     break
 
             # ⑦確定した場所に動かす
-            self.isGoal = True
-            for i in range(self.num_of_agents):
+            for i in range(self.num_of_agents+1):
                 self.agentPosition[i] = fixed_pos[i]
                 self.route[i].append(fixed_pos[i])
-                if self.agentPosition[i] != self.maze.goal[i]:
-                    self.isGoal = False
 
+            # ペナルティの修正とゴールチェック
+            self.isGoal = True
+            for i in range(self.num_of_agents):
+                if self._isTouch(self.agentPosition[i], self.agentPosition[self.num_of_agents]):
+                    # ターゲットにタッチしている場合は、衝突した結果としてもtouchの報酬
+                    penalty[i] = self.touch
+                else:
+                    self.isGoal = False
             if self.isGoal:
                 for i in range(self.num_of_agents):
                     penalty[i] = self.goal
@@ -240,7 +236,7 @@ class MultiMaze():
                     self.agents[i].r = penalty[i]
 
         # 台数に関係ない処理
-        for i in range(self.num_of_agents):
+        for i in range(self.num_of_agents+1):
             self.route[i].append(self.agentPosition[i])
 
         if self.learner.joint():
@@ -252,59 +248,116 @@ class MultiMaze():
         # 次の状態をセットする
         self.state = self._make_state_expression()
 
-    def observe(self, agent):
-        # 環境全体の状態であるstateから各エージェントが観測できるstateを抽出して返す
+    def observe(self,agent):
+        # 視界の設定を行う場合はこの関数をOverride
         if self.learner.mixed():
-            # Mixed Policyの場合(JSやJSA)は環境全体の状態を返す
             return self.state.copy()
         else:
-            # 個別のエージェントの観測を返す
-            return [self.yx2state[tuple(self.agentPosition[agent.id])]]
+            return self._get_state(agent.id)
 
     def check_goal(self):
         return self.isGoal
 
+    # ここから下の実装は、環境に依存しないのでは？
+    # 別のClassで実装されるべき
     """def getOthersState(self, id):
         # id以外のエージェントの状態のリストを返す。状態は１次元でもリストで定義する
         ret = []
         for i in range(self.num_of_agents):
             if i != id:
-                ret.append([self.yx2state[tuple(self.agentPosition[i])]])
+                ret.append(self._get_state(i))
         return ret
 
     def getNewState(self, old_state):
         # 1つの前の状態(mixedではない)を入力として、現在の状態(mixedではない)を返す
-        # 同じ場所には１つのエージェントしかいない前提
+
+        # 対応するエージェントを探す
+        oldpos = self._oldstate_to_oldposition(old_state)
         for i in range(self.num_of_agents):
-            s = self.yx2state[tuple(self.agentOldPosition[i])]
-            if old_state == [s]:
-                return [self.yx2state[tuple(self.agentPosition[i])]]
-        print("おかしい")
-        exit(1) # ここにはこないはず。来たら例外になるはず
+            if self.agentOldPosition[i] == oldpos:
+                break
+        return self._get_state(i)
 
     def getOthersOldState(self, id):
         # id以外のエージェントの１つ前の状態のリストを返す。状態は１次元でもリストで定義する
         ret = []
         for i in range(self.num_of_agents):
             if i != id:
-                ret.append([self.yx2state[tuple(self.agentOldPosition[i])]])
+                ret.append(self._get_old_state(i))
         return ret"""
+
+    def _get_state(self, id):
+        # 各エージェントはターゲットとの差しか見えない
+        dy = self.agentPosition[self.num_of_agents][0] - self.agentPosition[id][0] + self.size - 1
+        dx = self.agentPosition[self.num_of_agents][1] - self.agentPosition[id][1] + self.size - 1
+        return [dy * ((self.size-1)*2+1) + dx]
+
+    def _oldstate_to_oldposition(self, state):
+        state = state[0] # これが呼ばれるときはjoint stateではないのでOK?
+        dy = state // ((self.size-1)*2+1)
+        dx = state % ((self.size-1)*2+1)
+        posy = self.agentOldPosition[self.num_of_agents][0] + self.size - 1 - dy
+        posx = self.agentOldPosition[self.num_of_agents][1] + self.size - 1 - dx
+        return [posy, posx]
+
+    def _get_old_state(self, id):
+        dy = self.agentOldPosition[self.num_of_agents][0] - self.agentOldPosition[id][0] + self.size - 1
+        dx = self.agentOldPosition[self.num_of_agents][1] - self.agentOldPosition[id][1] + self.size - 1
+        return [dy * ((self.size-1)*2+1) + dx]
+
+    def _create_maze(self, size):
+        # size x size の周囲に壁のある空間をMazeと同じ形式で作成
+        maze = []
+        # 上の壁
+        maze.append([[0, 1, 0, 0, 1]])
+        for i in range(size-2):
+            maze[0].append([0, 0, 0, 0, 1])
+        maze[0].append([0, 0, 0, 1, 1])
+        # 途中の壁
+        for j in range(size-2):
+            maze.append([[0, 1, 0, 0, 0]])
+            for i in range(size-2):
+                maze[j+1].append([0, 0, 0, 0, 0])
+            maze[j+1].append([0, 0, 0, 1, 0])
+        # 下の壁
+        maze.append([[0, 1, 1, 0, 0]])
+        for i in range(size-2):
+            maze[size-1].append([0, 0, 1, 0, 0])
+        maze[size-1].append([0, 0, 1, 1, 0])
+        return np.array(maze)
+
+    def _random_position(self, id):
+        # idより小さいエージェントと重複しない位置を返す
+        isFind = False
+        while not isFind:
+            isFind = True
+            y = np.random.randint(self.size)
+            x = np.random.randint(self.size)
+
+            for i in range(id):
+                if y == self.agentPosition[i][0] and x == self.agentPosition[i][1]:
+                    isFind = False
+                    break
+        return [y, x]
+
+    def _isTouch(self, pos1, pos2):
+        if abs(pos1[0]-pos2[0])+abs(pos1[1]-pos2[1]) == 1:
+            return True
+        else:
+            return False
 
     def _make_state_expression(self):
         state = []
-        for i in range(self.num_of_agents):
-            state += [self.yx2state[tuple(self.agentPosition[i])]]
+        for id in range(self.num_of_agents):
+            state = state + self._get_state(id)
         return state
 
     def _move(self,i,pos,action):
         # 特定の位置で特定の行動をした場合の、他のエージェントを考慮しない移動位置を返す
         # 実際に移動はしない
-        # ゴールに辿り着いたエージェントは動かない
         # リストを返しているがタプルの方が良いのでは？
-        if pos == self.maze.goal[i]:
-            penalty = 0 # 先についたエージェントに報酬を与えなくて良いのか？与え続けるのはおかしい気がする
-            newpos = pos.copy()
-        elif self.maze.map[pos[0],pos[1],action+1] == 0:
+
+        if self.map[pos[0],pos[1],action+1] == 0:
             penalty = self.walk
             newpos = [0,0]
             newpos[0] = pos[0] + self.mv[action][0]
@@ -327,31 +380,26 @@ class MultiMaze():
         return False
 
 if __name__ == '__main__':
-    params = {
-        'walk': -1,
-        'wall': -1,
-        'collision': -10,
-        'goal': 10,
-        'eps': 0.1,
-        'gamma': 1.0,
-        'alpha': 0.1,
-        'maxEpisodes': 200000,
-        'maxSteps': 300000,
-        'window_size': 20,
-        'p_threshold': 0.01}
-
-    maze = Tunnel2Goal
-    params['init_qvalue0'] = 'result/maze/Tunnel2Goal_qvalue0_e0.3g1.0ep200000'
-    params['init_qvalue1'] = 'result/maze/Tunnel2Goal_qvalue1_e0.3g1.0ep200000'
-    params['ER0'] = 'result/maze/Tunnel2Goal_ER0_e0.3g1.0ep200000'
-    params['ER1'] = 'result/maze/Tunnel2Goal_ER1_e0.3g1.0ep200000'
+    params = {'num_of_agents':1,
+              'size':7,
+              'erate':0.3,
+              'walk':-1,
+              'wall':-1,
+              'collision':-10,
+              'touch':0,
+              'goal':0,
+              'targetMove':False,
+              'startPos':[],
+              'eps':0.3,
+              'gamma':0.8,
+              'alpha':0.1,
+              'maxEpisodes':10000,
+              'maxSteps':10000}
+    learner = Agent
 
     start = time.time()
-    m = MultiMaze(CQLearner,params,maze())
+    m = MultiPursuit(learner, params)
     m.multi_q.learn()
     elapsed_time = time.time() - start
     print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
-
-
-
 

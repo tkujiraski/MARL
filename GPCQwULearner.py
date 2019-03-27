@@ -1,10 +1,11 @@
-from CQLearner import *
+from GCQLearner import *
 
-class PCQLearner2(CQLearner):
+class GPCQwULearner(GCQLearner):
     def __init__(self, id, nstate, naction, params, env):
         super().__init__(id, nstate, naction, params, env)
 
-    # ここを変える必要あり。次の遷移状態での(s_k, s_l)が拡張されているかどうかで決める
+    # PCQLearner2と同じ実装。多重継承できないんだっけ？
+    # 多重継承はできるが、super()が２回呼ばれている可能性があるので、後で精査してから
     def updateQ(self):
         if self.update:
             for other in self.others:
@@ -13,4 +14,7 @@ class PCQLearner2(CQLearner):
                     self.Qaug[tuple(self.old_s + other)].q[self.action] = (1 - self.alpha) * self.Qaug[tuple(self.old_s + other)].q[self.action] + self.alpha * (self.r + self.gamma * self.Qaug[tuple(self.state+new_other)].getMaxQ())
                 else:
                     self.Qaug[tuple(self.old_s + other)].q[self.action] = (1 - self.alpha) * self.Qaug[tuple(self.old_s + other)].q[self.action] + self.alpha * (self.r + self.gamma * self.q.getMaxQ(self.state))
+        else:
+            # 拡張されていない状態のQ値もアップデート
+            self.q.qvalue[tuple(self.old_s + [self.action])] += self.alpha * (self.r + self.gamma * self.q.getMaxQ(self.state) - self.q.qvalue[tuple(self.old_s + [self.action])])
         return

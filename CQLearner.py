@@ -38,7 +38,7 @@ class CQLearner(Agent):
         rnd = np.random.rand()
         if tuple(self.state) in self.s_vec:
             # 干渉しているエージェントの状態のリストを返す
-            others = self.env.getOthersState(self.id) # 行動は今の状態に基づく
+            others = self.env.multi_q.getOthersState(self.id) # 行動は今の状態に基づく
             for d in self.s_vec[tuple(self.state)]:
                 if d in others:
                     self.others.append(d)
@@ -99,7 +99,7 @@ class CQLearner(Agent):
         t, p = stats.ttest_1samp(W_k,ER_k)
         if len(W_k) == self.N and p<self.p_th:
             # Store <s_k(t),a_k(t),s_l(t),r_k(t)> in W_k(s_k,a_k,s_l) for all other agents l
-            others = self.env.getOthersOldState(self.id)
+            others = self.env.multi_q.getOthersOldState(self.id)
             for other in others:
                 tpaug = tuple(self.old_s+other+[self.action])
                 if not tpaug in self.Waug:
@@ -109,6 +109,7 @@ class CQLearner(Agent):
                 self.Waug_count[tpaug] += 1
             # for all extra state information s_i about another agent l present in s(t) do
             for other in others:
+                tpaug = tuple(self.old_s + other + [self.action]) # 3体で上手くいっていないのはこのせい？
                 # アルゴリズムには無いが、毎回検定するのは無駄なので、すでに(s_k, other)がs_vecにあれば検定しない
                 if tuple(self.old_s) in self.s_vec and other in self.s_vec[tuple(self.old_s)]:
                     pass

@@ -41,6 +41,7 @@ class MultiAgentRL():
 
                 # 行動する前に現在の状態をold_sに保存
                 for agent in self.agents:
+                    agent.oldold_s = agent.old_s.copy() # RGPCQで使用
                     agent.old_s = agent.state.copy()
 
                 # 選択された行動を実行し、状態遷移と、報酬の決定を行う
@@ -56,18 +57,19 @@ class MultiAgentRL():
                 # 各エージェントのQTableやポリシーの更新
                 self._update()
 
-                # check用
-                if ep>1000 and step == 100:
-                    print("Over 100")
-
                 # sが終端状態もしくは最大ステップに到達したらエピソードを終了
                 if self.check_goal():
                     print('終了状態へ到達 %d step' % step)
                     self.stepsForGoal.append(step)
                     break
+                if step == 1000:
+                    print('over 1000')
+
                 if step == self.maxSteps - 1:
                     self.stepsForGoal.append(step)
                     break
+
+            self._end_episode(ep)
 
     # アルゴリズムごとにOverrideされる処理
     # デフォルトは完全独立なQ-Learning
@@ -85,6 +87,43 @@ class MultiAgentRL():
     def _update(self):
         for agent in self.agents:
             agent.updateQ()
+
+    def _end_episode(self, ep):
+        for agent in self.agents:
+            agent.end_episode(ep)
+
+    def getOthersState(self, id):
+        # id以外のエージェントの状態のリストを返す。状態は１次元でもリストで定義する
+        ret = []
+        for i in range(len(self.agents)):
+            if i != id:
+                ret.append(self.agents[i].state.copy())
+        return ret
+
+    def getNewState(self, old_state):
+        # 1つの前の状態(mixedではない)を入力として、現在の状態(mixedではない)を返す
+
+        # 対応するエージェントを探す
+        for i in range(len(self.agents)):
+            if self.agents[i].old_s == old_state:
+                return self.agents[i].state
+        raise Exception("対応するエージェントがない")
+
+    def getOthersOldState(self, id):
+        # id以外のエージェントの１つ前の状態のリストを返す。状態は１次元でもリストで定義する
+        ret = []
+        for i in range(len(self.agents)):
+            if i != id:
+                ret.append(self.agents[i].old_s.copy())
+        return ret
+
+    def getOthersOldOldState(self, id):
+        # id以外のエージェントの２つ前の状態のリストを返す。状態は１次元でもリストで定義する
+        ret = []
+        for i in range(len(self.agents)):
+            if i != id:
+                ret.append(self.agents[i].oldold_s.copy())
+        return ret
 
     def plot_learning_curve(self):
         fig = plt.figure()

@@ -6,11 +6,12 @@ class GCQLearner(CQLearner):
 
     def selectAct(self):
         # 単独のQテーブルを使う場合はGreedyに動いてみる
+        self.isGreedy = False
         self.others = []
         rnd = np.random.rand()
         if tuple(self.state) in self.s_vec:
             # 干渉しているエージェントの状態のリストを返す
-            others = self.env.getOthersState(self.id) # 行動は今の状態に基づく
+            others = self.env.multi_q.getOthersState(self.id) # 行動は今の状態に基づく
             for d in self.s_vec[tuple(self.state)]:
                 if d in others:
                     self.others.append(d)
@@ -19,6 +20,7 @@ class GCQLearner(CQLearner):
                 # Select a_k(t) according to Q_k
                 self.Qlog.append(0)
                 self.action = self.q.getMaxAction(self.state) # greedyに行動する
+                self.isGreedy = True
             elif len(self.others)==1:
                 # Select a_k(t) according to Q_k~aug
                 self.Qlog.append(1)
@@ -43,5 +45,6 @@ class GCQLearner(CQLearner):
         else:
             self.Qlog.append(0)
             self.action = self.q.getMaxAction(self.state)
+            self.isGreedy = True
         self.actlog.append(self.action)
         return

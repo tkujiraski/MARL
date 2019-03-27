@@ -1,13 +1,17 @@
 from Agent import *
 import numpy as np
+import math
+import csv
 
-# CQ-Learning用のデータを準備するために、報酬の平均を記録するクラス
-class ERLearner(Agent):
+# 学習の進度によるOptimal Qとの差の変化を計算するクラス
+class CompareLearner(Agent):
     def __init__(self, id, nstate, naction, params, env):
         super().__init__(id, nstate, naction, params, env)
         self.N = params['window_size']
         self.reward = np.zeros(nstate+[naction,self.N])
         self.count = np.zeros(nstate + [naction], dtype=int)
+        self.optQ = np.load(params["OptQ"])
+        self.rmse = []
 
     def sparse_interaction(self):
         # ここで報酬を記録する
@@ -16,12 +20,20 @@ class ERLearner(Agent):
         return
 
     def end_episode(self, ep):
-        # 一定間隔ごとにQ値とER値とCount値を書き出す
+        # 一定間隔ごとに現在のQ値とOptimalQ値を比較した結果を書き出す
+        e = ep // 1000
         ep += 1
         if ep % 1000 == 0:
-            self.q.saveQvalue(self.filename + '_qvalue_ep' + str(ep))
-            self.saveER(self.filename + '_ER_ep' + str(ep))
-            self.saveCount(self.filename + '_count_ep' + str(ep))
+            self.diff = self.q.qvalue - self.optQ
+            self.rmse.append(0.0)
+            for i in range(self.diff.shape[0]):
+                tmp = self.diff[i][0]*self.diff[i][0] + self.diff[i][1]*self.diff[i][1] + self.diff[i][2]*self.diff[i][2] + self.diff[i][3]*self.diff[i][3]
+                self.rmse[e] = self.rmse[e] + tmp
+            self.rmse[e] = math.sqrt(self.rmse[e])
+        if ep == self.params["maxEpisodes"]:
+            with open(self.params["filename"], 'w') as f:
+                writer = csv.writer(f, lineterminator='\n')
+                writer.writerow(self.rmse)
 
     def setFilename(self,filename):
         self.filename = filename
@@ -32,5 +44,3 @@ class ERLearner(Agent):
 
     def saveCount(self, filename):
         np.save(filename + ".npy", self.count)
-
-

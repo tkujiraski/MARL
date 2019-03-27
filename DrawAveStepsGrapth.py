@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class DrawAveStepsGraph:
-    def __init__(self,filenames,legends,avestep,maxEpisodes, start=0, title=''):
+    def __init__(self,filenames,legends,avestep,maxEpisodes, start=0, title='', color=True):
         c = ['blue','red','green','black','grey','pink','purple','orange']
         ls = ['-','--',':','-.']
         num = len(filenames)
@@ -22,9 +22,9 @@ class DrawAveStepsGraph:
                     for i in range(maxEpisodes // avestep):
                         s = 0
                         for j in range(avestep):
-                            s += float(data[i * avestep + j])
+                            s += float(data[i * avestep + j]) + 1.0
                             if i == maxEpisodes // avestep - 1:
-                                last100[trial,j] = data[i * avestep + j]
+                                last100[trial,j] = float(data[i * avestep + j]) + 1.0
                         ave[trial,i] = s/avestep
                     trial += 1
             avetrial = ave.mean(axis=0)
@@ -42,8 +42,10 @@ class DrawAveStepsGraph:
 
         ax = fig.add_subplot(1, 1, 1)
         for i in range(len(filenames)):
-            #ax.plot(range(start//avestep,len(drawdata[i][start//avestep:])+start//avestep), drawdata[i][start//avestep:], c=c[i], label=legends[i])
-            ax.plot(range(start // avestep, len(drawdata[i][start // avestep:]) + start // avestep),
+            if color == True:
+                ax.plot(range(start//avestep,len(drawdata[i][start//avestep:])+start//avestep), drawdata[i][start//avestep:], c=c[i], label=legends[i])
+            else:
+                ax.plot(range(start // avestep, len(drawdata[i][start // avestep:]) + start // avestep),
                     drawdata[i][start // avestep:], linestyle=ls[i], color='black', label=legends[i])
         plt.legend()
         plt.show()
@@ -173,10 +175,10 @@ if __name__ == '__main__':
                              'log/交叉チェック付き/JSQLearnerCMUe0.1g1.0wall-1step300000trial50.csv',
                              'log/JS200000/JSAQLearnerCMUe0.1g1.0wall-1step10000trial50.csv'],
                             ['independent-learning', 'JSQ-learning', 'JSAQ-learning'], 100, 10000, title = 'CMU')"""
-    drg = DrawAveStepsGraph(['log/交叉チェック付き/AgentTunnelToGoal3e0.1g1.0wall-1step300000trial50.csv',
+    """drg = DrawAveStepsGraph(['log/交叉チェック付き/AgentTunnelToGoal3e0.1g1.0wall-1step300000trial50.csv',
                              'log/交叉チェック付き/JSQLearnerTunnelToGoal3e0.1g1.0wall-1step300000trial50.csv',
                              'log/JS200000/JSAQLearnerTunnelToGoal3e0.1g1.0wall-1step1000000trial50.csv'],
-                            ['independent-learning', 'JSQ-learning', 'JSAQ-learning'], 100, 10000, title = 'TunnelToGoal3')
+                            ['independent-learning', 'JSQ-learning', 'JSAQ-learning'], 100, 10000, title = 'TunnelToGoal3')"""
 
     # 1万回での学習曲線を載せるか？カラーになるし。
     """drg = DrawAveStepsGraph(["log/交叉チェック付き/JSQLearnerTunnel2Goale0.1g1.0wall-1step300000trial50.csv",
@@ -243,3 +245,24 @@ if __name__ == '__main__':
                              'log/30万回/CQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial2.csv',
                              'log/30万回/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1step10000trial2.csv'],
                             ['JSQ-Learner','CQ-Learner', 'GPCQ-Learner'], 100, 300000,200000)"""
+
+    #drg = DrawAveStepsGraph(['log/GPCQLearnerTunnel2Goale0.1g1.0wall-1step100000pre10000goal0trial10.csv','log/GPCQLearnerTunnel2Goale0.1g1.0wall-1step100000pre50000goal0trial10.csv','log/GPCQLearnerTunnel2Goale0.1g1.0wall-1step100000pre100000goal0trial10.csv','log/GPCQLearnerTunnel2Goale0.1g1.0wall-1step100000pre200000goal0trial10.csv'],['10000','50000','100000','200000'],100,10000)
+    """drg = DrawAveStepsGraph(['log/GPCQLearnerTunnel2Goale0.1g1.0wall-1step100000pre200000goal0trial10.csv',
+                             'log/GPCQLearnerISRe0.1g1.0wall-1step100000pre200000goal0trial10.csv',
+                             'log/GPCQLearnerCITe0.1g1.0wall-1step100000pre200000goal0trial10.csv',
+                             'log/GPCQLearnerCMUe0.1g1.0wall-1step100000pre200000goal0trial10.csv',
+                             'log/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1step100000pre200000goal0trial10.csv'],
+                            ['TunnelToGoal', 'ISR', 'CIT', 'CMU', 'TunnelToGoal3'], 100, 10000)"""
+
+    # Pursuit
+    #drg = DrawAveStepsGraph(['log/AgentPursuit7start0e0.3g1.0wall-1step10000trial50.csv','log/JSQLearnerPursuit7start0e0.3g1.0wall-1step10000trial50.csv','log/JSAQLearnerPursuit7start0e0.3g1.0wall-1step10000trial50.csv'],['Agent20000','JSQ20000','JSAQ20000'],100, 20000)
+    """drg = DrawAveStepsGraph(['log/RGPCQLearnerPursuit7start5e0.1g1.0wall-1step10000trial50.csv',
+                             'log/RGPCQLearnerPursuit7start6e0.1g1.0wall-1step10000trial50.csv'],
+                            ['6', '7'], 100, 10000)"""
+
+    # e=0.8
+    """drg = DrawAveStepsGraph(['log/e0.8/CQLearnerTunnelToGoal3e0.1g1.0wall-1step100000trial50.csv',
+                             'log/e0.8/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1step100000trial50.csv',
+                             'log/e0.8/RGPCQLearnerTunnelToGoal3e0.1g1.0wall-1step100000trial50.csv'],
+                            ['CQ-Learner', 'GPCQ-Learner', 'RGPCQ-Learner'], 100, 10000)"""
+    drg = DrawAveStepsGraph(['log/JSAQLearnerISRe0.1g1.0wall-1ep20000trial50.csv'], ['JSAQ-learning'], 100, 20000)

@@ -20,6 +20,7 @@ class Agent:
         self.action = -1
         self.state = []
         self.old_s = []
+        self.oldold_s = []
         self.r = 0
         self.earned_reward = 0
         self.q = QTable(nstate,naction, self.init_qvalue)
@@ -67,6 +68,10 @@ class Agent:
     def updatePi(self):
         # Policyを更新する方法を選択
         # デフォルトでは空
+        return
+
+    def end_episode(self,ep):
+        # episodeの終了時に必要な処理を記述
         return
 
     def get_state(self):
