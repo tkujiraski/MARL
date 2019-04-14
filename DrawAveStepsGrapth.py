@@ -265,4 +265,174 @@ if __name__ == '__main__':
                              'log/e0.8/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1step100000trial50.csv',
                              'log/e0.8/RGPCQLearnerTunnelToGoal3e0.1g1.0wall-1step100000trial50.csv'],
                             ['CQ-Learner', 'GPCQ-Learner', 'RGPCQ-Learner'], 100, 10000)"""
-    drg = DrawAveStepsGraph(['log/JSAQLearnerISRe0.1g1.0wall-1ep20000trial50.csv'], ['JSAQ-learning'], 100, 20000)
+    #drg = DrawAveStepsGraph(['log/JSAQLearnerISRe0.1g1.0wall-1ep20000trial50.csv'], ['JSAQ-learning'], 100, 20000)
+
+    # D論のグラフ
+    # ExistingTunnelToGoal2
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/AgentTunnel2Goale0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSQLearnerTunnel2Goale0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSAQLearnerTunnel2Goale0.1g1.0wall-1ep20000trial50.csv'],
+                            ['Indep. learner', 'JSQ-learner', 'JSAQ-learner'], 100, 20000)"""
+
+    # ExistingISR
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/AgentISRe0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSQLearnerISRe0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSAQLearnerISRe0.1g1.0wall-1ep20000trial50.csv'],
+                            ['Indep. learner', 'JSQ-learner', 'JSAQ-learner'], 100, 20000)"""
+
+    # ExistingCIT
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/AgentCITe0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSQLearnerCITe0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSAQLearnerCITe0.1g1.0wall-1ep20000trial50.csv'],
+                            ['Indep. learner', 'JSQ-learner', 'JSAQ-learner'], 100, 20000)"""
+
+    # ExistingCMU
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/AgentCMUe0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSQLearnerCMUe0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSAQLearnerCMUe0.1g1.0wall-1ep20000trial50.csv'],
+                            ['Indep. learner', 'JSQ-learner', 'JSAQ-learner'], 100, 20000)"""
+
+    # ExistingTunnelToGoal2
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/AgentTunnelToGoal3e0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSQLearnerTunnelToGoal3e0.1g1.0wall-1ep20000trial50.csv',
+                             'log/e0.8/maze/JSAQLearnerTunnelToGoal3e0.1g1.0wall-1ep20000trial50.csv'],
+                            ['Indep. learner', 'JSQ-learner', 'JSAQ-learner'], 100, 20000)"""
+
+    # Maze games 4章
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerTunnel2Goale0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerTunnel2Goale0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2Tunnel2Goale0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerTunnel2Goale0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning','GPCQ-learning'], 100, 10000)"""
+
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerISRe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerISRe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2ISRe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerISRe0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning', 'GPCQ-learning'], 100, 10000)"""
+
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerCITe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerCITe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2CITe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerCITe0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning', 'GPCQ-learning'], 100, 10000)"""
+
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerCMUe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerCMUe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2CMUe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerCMUe0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning', 'GPCQ-learning'], 100, 10000)"""
+
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerTunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerTunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2TunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning', 'GPCQ-learning'], 100, 10000)"""
+
+    # Pursuit games
+    # No.1 start0
+    """drg = DrawAveStepsGraph(['log/e0.8/pursuit/CQLearnerPursuit7start0e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/PCQLearner2Pursuit7start0e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/RGPCQLearnerPursuit7start0e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQwULearnerPursuit7start0e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GCQLearnerPursuit7start0e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQLearnerPursuit7start0e0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'PCQ-learning', 'GCQPBD-learning', 'GPCQwU-learning', 'GCQ-learning',
+                             'GPCQ-learning'], 100, 10000)
+
+    # No.2 start4
+    drg = DrawAveStepsGraph(['log/e0.8/pursuit/CQLearnerPursuit7start4e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/PCQLearner2Pursuit7start4e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/RGPCQLearnerPursuit7start4e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQwULearnerPursuit7start4e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GCQLearnerPursuit7start4e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQLearnerPursuit7start4e0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'PCQ-learning', 'GCQPBD-learning', 'GPCQwU-learning', 'GCQ-learning',
+                             'GPCQ-learning'], 100, 10000)
+
+    # No.3 start7
+    drg = DrawAveStepsGraph(['log/e0.8/pursuit/CQLearnerPursuit7start7e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/PCQLearner2Pursuit7start7e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/RGPCQLearnerPursuit7start7e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQwULearnerPursuit7start7e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GCQLearnerPursuit7start7e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQLearnerPursuit7start7e0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'PCQ-learning', 'GCQPBD-learning', 'GPCQwU-learning', 'GCQ-learning',
+                             'GPCQ-learning'], 100, 10000)
+
+    # No.4 start1
+    drg = DrawAveStepsGraph(['log/e0.8/pursuit/CQLearnerPursuit7start1e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/PCQLearner2Pursuit7start1e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/RGPCQLearnerPursuit7start1e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQwULearnerPursuit7start1e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GCQLearnerPursuit7start1e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQLearnerPursuit7start1e0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'PCQ-learning', 'GCQPBD-learning', 'GPCQwU-learning', 'GCQ-learning',
+                             'GPCQ-learning'], 100, 10000)
+
+    # No.5 start2
+    drg = DrawAveStepsGraph(['log/e0.8/pursuit/CQLearnerPursuit7start2e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/PCQLearner2Pursuit7start2e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/RGPCQLearnerPursuit7start2e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQwULearnerPursuit7start2e0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'PCQ-learning', 'GCQPBD-learning', 'GPCQwU-learning'], 100, 10000)
+
+    # No.6 start8
+    drg = DrawAveStepsGraph(['log/e0.8/pursuit/CQLearnerPursuit7start8e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/PCQLearner2Pursuit7start8e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/RGPCQLearnerPursuit7start8e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQwULearnerPursuit7start8e0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'PCQ-learning', 'GCQPBD-learning', 'GPCQwU-learning'], 100, 10000)
+
+    # No.7 start6
+    drg = DrawAveStepsGraph(['log/e0.8/pursuit/CQLearnerPursuit7start6e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/PCQLearner2Pursuit7start6e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/RGPCQLearnerPursuit7start6e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/pursuit/GPCQwULearnerPursuit7start6e0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'PCQ-learning', 'GCQPBD-learning', 'GPCQwU-learning'], 100, 10000)"""
+
+    # Maze games 5章
+    """drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerTunnel2Goale0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerTunnel2Goale0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2Tunnel2Goale0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerTunnel2Goale0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/RGPCQLearnerTunnel2Goale0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQwULearnerTunnel2Goale0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning','GPCQ-learning', 'GCQPBD-learning', 'GPCQwU-learning'], 100, 10000)
+
+    drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerISRe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerISRe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2ISRe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerISRe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/RGPCQLearnerISRe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQwULearnerISRe0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning', 'GPCQ-learning', 'GCQPBD-learning',
+                             'GPCQwU-learning'], 100, 10000)
+
+    drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerCITe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerCITe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2CITe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerCITe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/RGPCQLearnerCITe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQwULearnerCITe0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning', 'GPCQ-learning', 'GCQPBD-learning',
+                             'GPCQwU-learning'], 100, 10000)
+
+    drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerCMUe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerCMUe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2CMUe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerCMUe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/RGPCQLearnerCMUe0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQwULearnerCMUe0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning', 'GPCQ-learning', 'GCQPBD-learning',
+                             'GPCQwU-learning'], 100, 10000)"""
+
+    drg = DrawAveStepsGraph(['log/e0.8/maze/CQLearnerTunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GCQLearnerTunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/PCQLearner2TunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQLearnerTunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/RGPCQLearnerTunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv',
+                             'log/e0.8/maze/GPCQwULearnerTunnelToGoal3e0.1g1.0wall-1ep10000trial50.csv'],
+                            ['CQ-learning', 'GCQ-learning', 'PCQ-learning', 'GPCQ-learning', 'GCQPBD-learning',
+                             'GPCQwU-learning'], 100, 10000)
+

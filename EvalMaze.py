@@ -110,7 +110,7 @@ if __name__ == '__main__':
     trial = 50
     np.random.seed(seed=1)
 
-    #learner = Agent
+    learner = Agent
     #learner = JSQLearner
     #learner = JSAQLearner
     #learner = CQLearner
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     #learner = GPCQLearner
     #learner = RGPCQLearner
     #learner = GPCQwULearner
-    learner = CQwULearner
+    #learner = CQwULearner
 
     #filename = 'log/'+__file__.split('/')[-1]+datetime.now().strftime("%Y%m%d_%H%M%S")+'.csv'
     filename = 'log/'+learner.__name__+maze.__name__+'e{}g{}wall{}ep{}trial{}.csv'.format(params['eps'],params['gamma'],params['wall'],params['maxEpisodes'],trial)
